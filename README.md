@@ -3,27 +3,25 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Kalkulator Multiple Taruhan 2D (Multi-Pasaran + Pola A–T + Backup)</title>
+<title>Kalkulator Multiple Taruhan 2D (Multi-Pasaran + Backup) — Final</title>
 <style>
-  body { font-family: Arial, sans-serif; margin: 25px; background: #f9f9f9; color: #333; }
-  h2 { color: #0077cc; }
-  select, input { padding: 6px; margin-top: 4px; border-radius: 5px; border: 1px solid #aaa; }
-  button { padding: 8px 14px; border: none; border-radius: 5px; cursor: pointer; font-size: 14px; margin: 5px 5px 5px 0; }
+  body { font-family: Arial, sans-serif; margin: 20px; background: #f9f9f9; color: #333; }
+  h2 { color: #0077cc; margin-bottom: 8px; }
+  select, input, textarea { padding: 6px; margin-top: 4px; border-radius: 5px; border: 1px solid #aaa; font-size: 14px; }
+  textarea { resize: vertical; }
+  button { padding: 8px 12px; border: none; border-radius: 5px; cursor: pointer; font-size: 14px; margin: 5px 6px 5px 0; }
   button:hover { opacity: 0.95; }
   .primary { background: #0077cc; color: white; }
   .danger { background: #cc0000; color: white; }
   .success { background: #009933; color: white; }
-  .container { background: #fff; padding: 15px; border-radius: 10px; box-shadow: 0 2px 6px rgba(0,0,0,0.1); margin-bottom: 20px; }
-  table { border-collapse: collapse; width: 100%; margin-top: 10px; }
-  th, td { border: 1px solid #ccc; padding: 6px; text-align: center; }
-  th { background: #e0f0ff; }
+  .container { background: #fff; padding: 14px; border-radius: 10px; box-shadow: 0 2px 6px rgba(0,0,0,0.08); margin-bottom: 18px; }
+  table { border-collapse: collapse; width: 100%; margin-top: 10px; font-size: 13px; }
+  th, td { border: 1px solid #ddd; padding: 8px; text-align: center; }
+  th { background: #e8f6ff; }
   .summary { margin-top: 10px; background: #eef8ee; padding: 10px; border-radius: 8px; }
   .controls-row { display:flex; gap:8px; align-items:center; flex-wrap:wrap; margin-top:8px; }
-  .pattern-row { display:flex; gap:6px; flex-wrap:wrap; margin-top:10px; }
-  .pattern-btn { width:36px; height:36px; border-radius:6px; border:1px solid #999; background:#fff; cursor:pointer; }
-  .pattern-btn.active { background:#0077cc; color:#fff; border-color:#005fa3; }
-  .pattern-label { margin-left:8px; font-weight:bold; }
-  .small { font-size:13px; color:#666; }
+  #statusHariIni { color:#009933; font-weight:700; margin-top:10px; }
+  .small { font-size:13px; color:#555; }
 </style>
 </head>
 <body>
@@ -31,7 +29,7 @@
 <h2>Kalkulator Multiple Taruhan 2D — Multi Pasaran</h2>
 
 <div class="container">
-  <label>Pilih Pasaran:</label>
+  <label class="small">Pilih Pasaran:</label><br>
   <select id="pasaranSelect" onchange="gantiPasaran()">
     <option>HAWAI</option>
     <option>TOKYO</option>
@@ -47,8 +45,7 @@
     <option>KOREA</option>
     <option>JAPAN</option>
     <option>SINGAPORE</option>
-    <option>KA</option>
-    <option>BOJA</option>
+    <option>KAMBOJA</option>
     <option>JEJU</option>
     <option>PCSO</option>
     <option>PENANG</option>
@@ -56,30 +53,23 @@
     <option>HONGKONG</option>
     <option>HONGKONG LOTTO</option>
   </select>
-
-  <!-- Pola A-T -->
-  <div style="margin-top:8px;">
-    <div class="small">Pilih Pola (disimpan per pasaran):</div>
-    <div id="patternRow" class="pattern-row" aria-hidden="false"></div>
-    <div class="pattern-label">Pola aktif: <span id="activePatternLabel">A</span></div>
-  </div>
 </div>
 
 <div class="container">
-  <label>Jumlah nomor dipasang (M):</label>
+  <label class="small">Jumlah nomor dipasang (M):</label><br>
   <input type="number" id="jumlahNomor" value="10" min="1" max="99">
   
-  <label>Payout ratio:</label>
-  <input type="number" id="payout" value="100">
+  <label class="small" style="margin-left:10px">Payout ratio:</label><br>
+  <input type="number" id="payout" value="100" style="margin-right:10px">
   
-  <label>Target keuntungan per menang:</label>
+  <label class="small">Target keuntungan per menang:</label><br>
   <input type="number" id="target" value="50000">
   
-  <label>Minimal taruhan per nomor:</label>
+  <label class="small" style="margin-left:10px">Minimal taruhan per nomor:</label><br>
   <input type="number" id="minTaruhan" value="100" step="100">
   
-  <p>Total kekalahan (otomatis): <input id="kerugian" value="0" readonly></p>
-  <p>Total modal kumulatif: <input id="totalModal" value="0" readonly></p>
+  <p class="small">Total kekalahan (otomatis): <input id="kerugian" value="0" readonly style="border:none; background:transparent;"></p>
+  <p class="small">Total modal kumulatif: <input id="totalModal" value="0" readonly style="border:none; background:transparent;"></p>
 
   <div class="controls-row">
     <button class="primary" onclick="hitung()">Hitung Multiple</button>
@@ -87,89 +77,80 @@
     <button class="success" onclick="tambahMenang()">Menang Hari Ini</button>
     <button onclick="simulasi()">Simulasi 10 Hari</button>
     <button class="danger" onclick="resetPasaran()">Reset Pasaran</button>
-    <!-- Export / Import buttons placed next to Reset as requested -->
+    <button onclick="batalkanHariTerakhir()">Batalkan Hari Terakhir</button>
     <button onclick="exportData()">Ekspor Data</button>
     <button onclick="triggerImport()">Impor Data</button>
     <input type="file" id="importFile" accept=".json" style="display:none" onchange="importData(event)">
   </div>
+
+  <p id="statusHariIni"></p>
 </div>
 
 <div class="container" id="hasil"></div>
 
 <div class="container">
-  <h3>Histori Harian (pada pola aktif)</h3>
+  <h3>Histori Harian</h3>
   <table id="tabelHistori">
-    <tr><th>Hari</th><th>Status</th><th>Modal</th><th>Total Kekalahan</th><th>Total Modal</th></tr>
+    <tr><th>Hari</th><th>Tanggal</th><th>Status</th><th>Modal</th><th>Total Kekalahan</th><th>Total Modal</th></tr>
   </table>
   <div class="summary" id="ringkasan"></div>
 </div>
 
+<!-- Textarea catatan per pasaran: akan ditaruh paling bawah -->
+<div class="container">
+  <h3>Catatan Keluaran (per pasaran)</h3>
+  <textarea id="catatanPasaran" rows="8" style="width:100%"></textarea>
+  <div style="margin-top:8px">
+    <button onclick="simpanCatatan()" class="primary">Simpan</button>
+    <button onclick="hapusCatatan()" class="danger">Hapus</button>
+    <button onclick="salinCatatan()" class="success">Salin</button>
+  </div>
+  <p class="small" style="margin-top:8px">Catatan disimpan per pasaran dan akan muncul otomatis saat Anda mengganti pasaran.</p>
+</div>
+
 <script>
 /*
-  New storage structure (backwards-compatible migration included):
-
-  localStorage key: "dataMultiPasaran"
-  Stored value: {
-    "<PASARAN_NAME>": {
-      // for backward compatibility, existing top-level keys (totalKalah, totalModal, histori, modalTerakhir)
-      // will be migrated into patterns.A
-      patterns: {
-        "A": { totalKalah, totalModal, histori: [...], modalTerakhir },
-        "B": { ... },
-        ...
-        "T": { ... }
-      },
-      activePattern: "A"  // current active pattern for this pasaran
-    },
-    ...
+  Struktur disimpan di localStorage key "dataMultiPasaran"
+  Per pasaran:
+  {
+    totalKalah: number,
+    totalModal: number,
+    histori: [ { hari, tanggal, status, modal, totalKalah, totalModal }, ... ],
+    modalTerakhir: number,
+    lastActionDate: "YYYY-MM-DD",  // tanggal terakhir ada aksi
+    catatan: "..."                 // textarea per pasaran
   }
-
-  lastActivePasaran stored in localStorage as before.
 */
-
-const PATTERNS = Array.from({length:20}, (_,i) => String.fromCharCode(65 + i)); // A..T
 
 let dataSemuaPasaran = JSON.parse(localStorage.getItem("dataMultiPasaran") || "{}");
 let pasaranAktif = localStorage.getItem("lastActivePasaran") || document.getElementById("pasaranSelect").value;
 
-// Ensure every pasaran exists and migrate old structure if present
 function ensureAllPasaranExist() {
   const sel = document.getElementById("pasaranSelect");
   for (let i = 0; i < sel.options.length; i++) {
     const name = sel.options[i].text;
     if (!dataSemuaPasaran[name]) {
-      dataSemuaPasaran[name] = createEmptyPasaran();
+      dataSemuaPasaran[name] = {
+        totalKalah: 0,
+        totalModal: 0,
+        histori: [],
+        modalTerakhir: 0,
+        lastActionDate: "",
+        catatan: ""
+      };
     } else {
-      // if existing structure is old (no patterns), migrate into patterns.A
-      const entry = dataSemuaPasaran[name];
-      if (!entry.patterns) {
-        // old keys: totalKalah, totalModal, histori, modalTerakhir
-        const patternsObj = {};
-        PATTERNS.forEach(p => patternsObj[p] = createEmptyPattern());
-        // migrate existing data into A
-        patternsObj['A'].totalKalah = entry.totalKalah || 0;
-        patternsObj['A'].totalModal = entry.totalModal || 0;
-        patternsObj['A'].histori = entry.histori || [];
-        patternsObj['A'].modalTerakhir = entry.modalTerakhir || 0;
-        // replace entry
-        dataSemuaPasaran[name] = { patterns: patternsObj, activePattern: entry.activePattern || 'A' };
-      } else {
-        // ensure all patterns present
-        PATTERNS.forEach(p => {
-          if (!entry.patterns[p]) entry.patterns[p] = createEmptyPattern();
-        });
-        if (!entry.activePattern) entry.activePattern = 'A';
-      }
+      // ensure keys exist for older data
+      const d = dataSemuaPasaran[name];
+      if (typeof d.totalKalah === "undefined") d.totalKalah = 0;
+      if (typeof d.totalModal === "undefined") d.totalModal = 0;
+      if (!Array.isArray(d.histori)) d.histori = [];
+      if (typeof d.modalTerakhir === "undefined") d.modalTerakhir = 0;
+      if (typeof d.lastActionDate === "undefined") d.lastActionDate = "";
+      if (typeof d.catatan === "undefined") d.catatan = "";
     }
   }
 }
-
-function createEmptyPattern() {
-  return { totalKalah: 0, totalModal: 0, histori: [], modalTerakhir: 0 };
-}
-
 ensureAllPasaranExist();
-if (!dataSemuaPasaran[pasaranAktif]) pasaranAktif = document.getElementById("pasaranSelect").value;
 
 function simpanData() {
   localStorage.setItem("dataMultiPasaran", JSON.stringify(dataSemuaPasaran));
@@ -178,58 +159,38 @@ function simpanData() {
 
 function gantiPasaran() {
   pasaranAktif = document.getElementById("pasaranSelect").value;
-  if (!dataSemuaPasaran[pasaranAktif]) dataSemuaPasaran[pasaranAktif] = { patterns: {}, activePattern: 'A' };
-  // ensure patterns exist
-  PATTERNS.forEach(p => { if (!dataSemuaPasaran[pasaranAktif].patterns[p]) dataSemuaPasaran[pasaranAktif].patterns[p] = createEmptyPattern(); });
-  // set pattern row UI
-  renderPatternButtons();
+  if (!dataSemuaPasaran[pasaranAktif]) {
+    dataSemuaPasaran[pasaranAktif] = { totalKalah: 0, totalModal: 0, histori: [], modalTerakhir: 0, lastActionDate: "", catatan: "" };
+  }
   simpanData();
   tampilkanData();
 }
 
-/* Pattern UI */
-function renderPatternButtons() {
-  const row = document.getElementById('patternRow');
-  row.innerHTML = '';
-  const entry = dataSemuaPasaran[pasaranAktif];
-  const active = entry.activePattern || 'A';
-  PATTERNS.forEach(p => {
-    const btn = document.createElement('button');
-    btn.textContent = p;
-    btn.className = 'pattern-btn' + (p === active ? ' active' : '');
-    btn.onclick = () => selectPattern(p);
-    row.appendChild(btn);
-  });
-  document.getElementById('activePatternLabel').textContent = entry.activePattern || 'A';
+/* Helper: tanggal ISO (YYYY-MM-DD) untuk perbandingan dan format lokal untuk tampilan */
+function tanggalISO(d) {
+  return d.toISOString().split("T")[0];
+}
+function tanggalLokalSekarang() {
+  return new Date().toLocaleDateString("id-ID");
+}
+function hariIniISO() {
+  return tanggalISO(new Date());
 }
 
-/* Select a pattern (A..T) for current pasaran */
-function selectPattern(p) {
-  if (!PATTERNS.includes(p)) return;
-  dataSemuaPasaran[pasaranAktif].activePattern = p;
-  // ensure pattern exists
-  if (!dataSemuaPasaran[pasaranAktif].patterns[p]) dataSemuaPasaran[pasaranAktif].patterns[p] = createEmptyPattern();
-  simpanData();
-  renderPatternButtons();
-  tampilkanData();
+/* Update indikator status hari ini (hijau) */
+function updateStatusHariIni(status) {
+  const el = document.getElementById("statusHariIni");
+  if (!status) el.innerText = "";
+  else el.innerText = `📅 Hari ini sudah dicatat: ${status}`;
 }
 
-/* Helper to get currently-active pattern object for current pasaran */
-function currentPatternObj() {
-  const entry = dataSemuaPasaran[pasaranAktif];
-  const p = entry.activePattern || 'A';
-  if (!entry.patterns[p]) entry.patterns[p] = createEmptyPattern();
-  return entry.patterns[p];
-}
-
-/* Main functions (adapted to work per-pattern) */
+/* Perhitungan utama (tidak dirubah logika) */
 function hitung() {
   const f = parseInt(document.getElementById("payout").value, 10);
   const T = parseInt(document.getElementById("target").value, 10);
   const M = parseInt(document.getElementById("jumlahNomor").value, 10);
-  const entry = dataSemuaPasaran[pasaranAktif];
-  const patternObj = currentPatternObj();
-  const L = patternObj.totalKalah || 0;
+  const d = dataSemuaPasaran[pasaranAktif];
+  const L = d.totalKalah || 0;
   const minBet = parseInt(document.getElementById("minTaruhan").value, 10);
 
   if (isNaN(f) || isNaN(T) || isNaN(M) || isNaN(minBet)) {
@@ -247,136 +208,193 @@ function hitung() {
   const totalMenang = f * s;
   const net = totalMenang - totalModal;
 
-  patternObj.modalTerakhir = totalModal;
-  // save back
-  entry.patterns[entry.activePattern] = patternObj;
-  dataSemuaPasaran[pasaranAktif] = entry;
+  d.modalTerakhir = totalModal;
+  dataSemuaPasaran[pasaranAktif] = d;
   simpanData();
 
   document.getElementById("hasil").innerHTML = `
-    <p>Pasaran: <strong>${pasaranAktif}</strong> &nbsp;|&nbsp; Pola: <strong>${entry.activePattern}</strong></p>
     <p>Stake ideal per nomor: <strong>Rp${s.toLocaleString()}</strong></p>
     <p>Total modal hari ini: <strong>Rp${totalModal.toLocaleString()}</strong></p>
     <p>Total menang (1 nomor kena): <strong>Rp${totalMenang.toLocaleString()}</strong></p>
     <p><strong>Net hasil:</strong> Rp${net.toLocaleString()}</p>
   `;
-
   tampilkanData();
 }
 
+/* Tambah Kekalahan dengan confirm + pembatas 1x per hari */
 function tambahKalah() {
-  const entry = dataSemuaPasaran[pasaranAktif];
-  const patternObj = currentPatternObj();
-  if (!patternObj.modalTerakhir || patternObj.modalTerakhir === 0) return alert("Hitung dulu sebelum menambah kekalahan!");
-  patternObj.totalKalah = (patternObj.totalKalah || 0) + patternObj.modalTerakhir;
-  patternObj.totalModal = (patternObj.totalModal || 0) + patternObj.modalTerakhir;
-  patternObj.histori.push({ hari: (patternObj.histori ? patternObj.histori.length : 0) + 1, status: "Kalah", modal: patternObj.modalTerakhir, totalKalah: patternObj.totalKalah, totalModal: patternObj.totalModal });
-  // write back
-  entry.patterns[entry.activePattern] = patternObj;
-  dataSemuaPasaran[pasaranAktif] = entry;
+  const d = dataSemuaPasaran[pasaranAktif];
+  const todayISO = hariIniISO();
+  if (d.lastActionDate === todayISO) return alert("Hari ini sudah dicatat!");
+  if (!confirm("Yakin ingin menandai hari ini sebagai KALAH?")) return;
+  if (!d.modalTerakhir || d.modalTerakhir === 0) return alert("Hitung dulu sebelum menambah kekalahan!");
+
+  d.totalKalah = (d.totalKalah || 0) + d.modalTerakhir;
+  d.totalModal = (d.totalModal || 0) + d.modalTerakhir;
+  d.lastActionDate = todayISO;
+  d.histori.push({
+    hari: d.histori.length + 1,
+    tanggal: tanggalLokalSekarang(),
+    status: "Kalah",
+    modal: d.modalTerakhir,
+    totalKalah: d.totalKalah,
+    totalModal: d.totalModal
+  });
+  dataSemuaPasaran[pasaranAktif] = d;
   simpanData();
   tampilkanData();
-  alert("Total kekalahan (pola " + entry.activePattern + ") diperbarui: Rp" + patternObj.totalKalah.toLocaleString());
+  updateStatusHariIni("KALAH");
 }
 
+/* Tambah Menang dengan confirm + pembatas 1x per hari */
 function tambahMenang() {
-  const entry = dataSemuaPasaran[pasaranAktif];
-  const patternObj = currentPatternObj();
-  if (!patternObj.modalTerakhir || patternObj.modalTerakhir === 0) return alert("Hitung dulu sebelum mencatat kemenangan!");
+  const d = dataSemuaPasaran[pasaranAktif];
+  const todayISO = hariIniISO();
+  if (d.lastActionDate === todayISO) return alert("Hari ini sudah dicatat!");
+  if (!confirm("Yakin ingin menandai hari ini sebagai MENANG?")) return;
+  if (!d.modalTerakhir || d.modalTerakhir === 0) return alert("Hitung dulu sebelum mencatat kemenangan!");
+
   const f = parseInt(document.getElementById("payout").value, 10);
   const M = parseInt(document.getElementById("jumlahNomor").value, 10);
-  const s = patternObj.modalTerakhir / M;
+  const s = d.modalTerakhir / M;
   const totalMenang = f * s;
-  const net = totalMenang - patternObj.modalTerakhir;
-  patternObj.totalKalah = Math.max(0, (patternObj.totalKalah || 0) - net);
-  patternObj.totalModal = (patternObj.totalModal || 0) + patternObj.modalTerakhir;
-  patternObj.histori.push({ hari: (patternObj.histori ? patternObj.histori.length : 0) + 1, status: "Menang", modal: patternObj.modalTerakhir, totalKalah: patternObj.totalKalah, totalModal: patternObj.totalModal });
-  // reset only this pattern's running losses
-  patternObj.modalTerakhir = 0;
-  // write back
-  entry.patterns[entry.activePattern] = patternObj;
-  dataSemuaPasaran[pasaranAktif] = entry;
+  const net = totalMenang - d.modalTerakhir;
+  d.totalKalah = Math.max(0, (d.totalKalah || 0) - net);
+  d.totalModal = (d.totalModal || 0) + d.modalTerakhir;
+  d.lastActionDate = todayISO;
+  d.histori.push({
+    hari: d.histori.length + 1,
+    tanggal: tanggalLokalSekarang(),
+    status: "Menang",
+    modal: d.modalTerakhir,
+    totalKalah: d.totalKalah,
+    totalModal: d.totalModal
+  });
+  dataSemuaPasaran[pasaranAktif] = d;
   simpanData();
   tampilkanData();
-  alert("Menang tercatat untuk pola " + entry.activePattern + ". Total kekalahan pola kini: Rp" + patternObj.totalKalah.toLocaleString());
+  updateStatusHariIni("MENANG");
 }
 
-/* Display only the histori for the active pattern (user requested "papan ketik mengikuti lainnya") */
+/* Batalkan Hari Terakhir (undo 1 langkah) */
+function batalkanHariTerakhir() {
+  const d = dataSemuaPasaran[pasaranAktif];
+  if (!d.histori || d.histori.length === 0) return alert("Belum ada histori untuk dibatalkan.");
+  if (!confirm("Batalkan (hapus) entri hari terakhir? Aksi ini hanya menghapus 1 entri terakhir.")) return;
+
+  // Buang entri terakhir
+  d.histori.pop();
+
+  // Rehitung totalKalah & totalModal dari histori yang tersisa (lebih aman daripada mencoba rollback langsung)
+  let totalKalah = 0;
+  let totalModal = 0;
+  for (const r of d.histori) {
+    totalModal += r.modal;
+    totalKalah = r.totalKalah; // setiap r.totalKalah sudah merepresentasikan kumulatif pada titik itu
+  }
+  // Jika histori kosong, reset totals ke 0
+  if (d.histori.length === 0) {
+    totalKalah = 0;
+    totalModal = 0;
+  } else {
+    // pastikan konsistensi: gunakan nilai totalModal terakhir dari objek terakhir histori jika ada
+    totalModal = d.histori[d.histori.length - 1].totalModal || totalModal;
+    totalKalah = d.histori[d.histori.length - 1].totalKalah || totalKalah;
+  }
+
+  d.totalKalah = totalKalah;
+  d.totalModal = totalModal;
+
+  // Perbarui lastActionDate ke tanggal entri terakhir jika ada, atau kosongkan
+  if (d.histori.length > 0) {
+    // ambil tanggal terakhir histori sebagai ISO untuk lastActionDate
+    const lastTanggalLocal = d.histori[d.histori.length - 1].tanggal; // format 'dd/mm/yyyy'
+    // coba parse dd/mm/yyyy menjadi ISO simple
+    const parts = lastTanggalLocal.split('/');
+    if (parts.length === 3) {
+      const iso = `${parts[2]}-${parts[1].padStart(2,'0')}-${parts[0].padStart(2,'0')}`;
+      d.lastActionDate = iso;
+    } else {
+      d.lastActionDate = "";
+    }
+  } else {
+    d.lastActionDate = "";
+  }
+
+  // If modalTerakhir still valid keep it; do not modify modalTerakhir as calculation code assumes user calls Hitung() first.
+  dataSemuaPasaran[pasaranAktif] = d;
+  simpanData();
+  tampilkanData();
+  alert("Entri hari terakhir berhasil dibatalkan.");
+}
+
+/* Tampilkan data & histori (menambahkan kolom Tanggal) */
 function tampilkanData() {
-  const entry = dataSemuaPasaran[pasaranAktif];
-  const pattern = entry.activePattern || 'A';
-  const patternObj = entry.patterns[pattern] || createEmptyPattern();
-  document.getElementById("kerugian").value = patternObj.totalKalah || 0;
-  document.getElementById("totalModal").value = patternObj.totalModal || 0;
+  const d = dataSemuaPasaran[pasaranAktif];
+  document.getElementById("kerugian").value = d.totalKalah || 0;
+  document.getElementById("totalModal").value = d.totalModal || 0;
 
   const table = document.getElementById("tabelHistori");
-  table.innerHTML = "<tr><th>Hari</th><th>Status</th><th>Modal</th><th>Total Kekalahan</th><th>Total Modal</th></tr>";
-  (patternObj.histori || []).forEach(r => {
+  table.innerHTML = "<tr><th>Hari</th><th>Tanggal</th><th>Status</th><th>Modal</th><th>Total Kekalahan</th><th>Total Modal</th></tr>";
+  (d.histori || []).forEach(r => {
     const tr = document.createElement("tr");
-    tr.innerHTML = `<td>${r.hari}</td><td>${r.status}</td><td>Rp${r.modal.toLocaleString()}</td><td>Rp${r.totalKalah.toLocaleString()}</td><td>Rp${r.totalModal.toLocaleString()}</td>`;
-    tr.style.background = r.status === "Menang" ? "#d0ffd0" : "#ffd0d0";
+    tr.innerHTML = `<td>${r.hari}</td><td>${r.tanggal || ""}</td><td>${r.status}</td><td>Rp${r.modal.toLocaleString()}</td><td>Rp${r.totalKalah.toLocaleString()}</td><td>Rp${r.totalModal.toLocaleString()}</td>`;
+    tr.style.background = r.status === "Menang" ? "#dfffe0" : "#ffe0e0";
     table.appendChild(tr);
   });
 
-  const menang = (patternObj.histori || []).filter(x => x.status === "Menang").length;
-  const kalah = (patternObj.histori || []).filter(x => x.status === "Kalah").length;
-  const rataModal = (patternObj.histori && patternObj.histori.length) ? Math.round((patternObj.totalModal || 0) / patternObj.histori.length) : 0;
+  const menang = (d.histori || []).filter(x => x.status === "Menang").length;
+  const kalah = (d.histori || []).filter(x => x.status === "Kalah").length;
+  const rataModal = (d.histori && d.histori.length) ? Math.round((d.totalModal || 0) / d.histori.length) : 0;
 
   document.getElementById("ringkasan").innerHTML = `
-    Pasaran Aktif: <strong>${pasaranAktif}</strong> &nbsp;|&nbsp; Pola: <strong>${pattern}</strong><br>
-    Total Hari (pola aktif): ${patternObj.histori ? patternObj.histori.length : 0} | Menang: ${menang} | Kalah: ${kalah}<br>
-    Rata-rata Modal per Hari (pola): Rp${rataModal.toLocaleString()}<br>
-    Total Modal Kumulatif (pola): Rp${(patternObj.totalModal || 0).toLocaleString()}<br>
-    Total Kekalahan Saat Ini (pola): Rp${(patternObj.totalKalah || 0).toLocaleString()}
+    Pasaran Aktif: <strong>${pasaranAktif}</strong><br>
+    Total Hari: ${d.histori ? d.histori.length : 0} | Menang: ${menang} | Kalah: ${kalah}<br>
+    Rata-rata Modal per Hari: Rp${rataModal.toLocaleString()}<br>
+    Total Modal Kumulatif: Rp${(d.totalModal || 0).toLocaleString()}<br>
+    Total Kekalahan Saat Ini: Rp${(d.totalKalah || 0).toLocaleString()}
   `;
+
+  // Update status indikator (hijau) jika lastActionDate adalah hari ini
+  if (d.lastActionDate === hariIniISO()) {
+    // gunakan status dari histori terakhir jika ada
+    const lastStatus = (d.histori && d.histori.length) ? d.histori[d.histori.length - 1].status.toUpperCase() : "";
+    updateStatusHariIni(lastStatus);
+  } else {
+    updateStatusHariIni();
+  }
+
+  // Load catatan pasaran ke textarea
+  document.getElementById("catatanPasaran").value = d.catatan || "";
 }
 
-/* Simulasi tetap bekerja per pola (menggunakan L per pola) */
+/* Simulasi (tidak diubah logikanya) */
 function simulasi() {
   const f = parseInt(document.getElementById("payout").value, 10);
   const T = parseInt(document.getElementById("target").value, 10);
   const M = parseInt(document.getElementById("jumlahNomor").value, 10);
   const minBet = parseInt(document.getElementById("minTaruhan").value, 10);
-  let L = 0;
-  let log = "";
-
+  let L = 0, log = "";
   for (let i = 1; i <= 10; i++) {
     let s = (T + L) / (f - M);
     s = Math.ceil(s / minBet) * minBet;
-    const totalModal = M * s;
-    const totalMenang = f * s;
-    const net = totalMenang - totalModal;
+    const totalModal = M * s, totalMenang = f * s, net = totalMenang - totalModal;
     const menang = (i === 10);
-    if (menang) { L = Math.max(0, L - net); } else { L += totalModal; }
+    if (menang) L = Math.max(0, L - net); else L += totalModal;
     log += `<tr><td>${i}</td><td>${menang ? "Menang" : "Kalah"}</td><td>Rp${totalModal.toLocaleString()}</td><td>Rp${L.toLocaleString()}</td></tr>`;
   }
-
-  document.getElementById("hasil").innerHTML = `
-    <h4>Simulasi 10 Hari (Menang di hari ke-10) — untuk pola aktif</h4>
-    <table><tr><th>Hari</th><th>Status</th><th>Modal</th><th>Total Kekalahan</th></tr>${log}</table>
-  `;
+  document.getElementById("hasil").innerHTML = `<h4>Simulasi 10 Hari (Menang di hari ke-10)</h4><table><tr><th>Hari</th><th>Status</th><th>Modal</th><th>Total Kekalahan</th></tr>${log}</table>`;
 }
 
-/* Reset pasaran aktif (hanya data pasaran itu) -> Reset only current pattern's data? 
-   User previously specified Reset clears data for pasaran; we keep same behavior but make it clear:
-   - Reset Pasaran: resets ALL patterns for that pasaran (as previous).
-   - If user wants to reset only pattern, they can switch pattern and press Reset - it will reset all patterns.
-   To keep backward compatibility, Reset clears all patterns for that pasaran (same as before).
-*/
+/* Reset pasaran aktif (tetap konfirmasi) */
 function resetPasaran() {
-  if (!confirm("Reset semua data untuk pasaran ini? Ini akan menghapus histori dan saldo untuk pasaran aktif dan semua pola pada pasaran ini.")) return;
-  // reset all patterns for this pasaran
-  const entry = dataSemuaPasaran[pasaranAktif];
-  entry.patterns = {};
-  PATTERNS.forEach(p => entry.patterns[p] = createEmptyPattern());
-  entry.activePattern = 'A';
-  dataSemuaPasaran[pasaranAktif] = entry;
+  if (!confirm("Reset semua data untuk pasaran ini? Ini akan menghapus histori dan saldo untuk pasaran aktif.")) return;
+  dataSemuaPasaran[pasaranAktif] = { totalKalah: 0, totalModal: 0, histori: [], modalTerakhir: 0, lastActionDate: "", catatan: "" };
   simpanData();
-  renderPatternButtons();
   tampilkanData();
 }
 
-/* Export: ambil semua data and lastActivePasaran */
+/* Export / Import (termasuk semua field baru) */
 function exportData() {
   try {
     const payload = {
@@ -398,75 +416,74 @@ function exportData() {
     alert("Gagal mengekspor data: " + e.message);
   }
 }
-
-/* Import: trigger file input */
-function triggerImport() {
-  document.getElementById("importFile").value = "";
-  document.getElementById("importFile").click();
-}
-
-/* Import: baca file JSON, validasi, dan tulis ke localStorage */
+function triggerImport() { document.getElementById("importFile").value = ""; document.getElementById("importFile").click(); }
 function importData(event) {
   const file = event.target.files[0];
   if (!file) return;
-  if (!confirm("Impor data akan menimpa data lokal saat ini untuk semua pasaran dan pola. Lanjutkan?")) return;
-
+  if (!confirm("Impor data akan menimpa data lokal saat ini untuk semua pasaran. Lanjutkan?")) return;
   const reader = new FileReader();
   reader.onload = function(e) {
     try {
       const parsed = JSON.parse(e.target.result);
-      // Basic validation
       if (!parsed || typeof parsed !== "object" || !parsed.dataMultiPasaran) {
         throw new Error("Format file tidak valid (tidak ditemukan dataMultiPasaran).");
       }
-      // Overwrite local data
       dataSemuaPasaran = parsed.dataMultiPasaran;
-      // Ensure all pasaran exist and patterns present
       ensureAllPasaranExist();
-      // Restore last active pasaran if available and present
       if (parsed.lastActivePasaran && dataSemuaPasaran[parsed.lastActivePasaran]) {
         pasaranAktif = parsed.lastActivePasaran;
       } else {
         pasaranAktif = document.getElementById("pasaranSelect").value;
       }
-      // Save to localStorage
       simpanData();
-      // Update dropdown selection to restored pasaranAktif
       document.getElementById("pasaranSelect").value = pasaranAktif;
-      renderPatternButtons();
       tampilkanData();
       alert("Data berhasil diimpor dan dipulihkan.");
     } catch (err) {
       alert("Gagal mengimpor: " + err.message);
     }
   };
-  reader.onerror = function() {
-    alert("Gagal membaca file impor.");
-  };
+  reader.onerror = function() { alert("Gagal membaca file impor."); };
   reader.readAsText(file);
 }
 
-/* On initial load, set dropdown to last active pasaran if available */
+/* Catatan per pasaran: simpan / hapus / salin */
+function simpanCatatan() {
+  const teks = document.getElementById("catatanPasaran").value;
+  dataSemuaPasaran[pasaranAktif].catatan = teks;
+  simpanData();
+  alert("Catatan tersimpan untuk pasaran " + pasaranAktif + ".");
+}
+function hapusCatatan() {
+  if (!confirm("Hapus catatan pasaran ini?")) return;
+  dataSemuaPasaran[pasaranAktif].catatan = "";
+  simpanData();
+  document.getElementById("catatanPasaran").value = "";
+  alert("Catatan dihapus.");
+}
+function salinCatatan() {
+  const teks = document.getElementById("catatanPasaran").value;
+  if (!teks) return alert("Tidak ada teks untuk disalin.");
+  navigator.clipboard?.writeText(teks).then(() => {
+    alert("Catatan disalin ke clipboard.");
+  }).catch(() => {
+    // fallback
+    const ta = document.createElement("textarea");
+    ta.value = teks; document.body.appendChild(ta); ta.select();
+    try { document.execCommand("copy"); alert("Catatan disalin ke clipboard."); } catch (e) { alert("Gagal menyalin."); }
+    ta.remove();
+  });
+}
+
+/* Inisialisasi on page load */
 window.addEventListener("load", () => {
-  const sel = document.getElementById("pasaranSelect");
-  if (pasaranAktif) {
-    // If pasaranAktif exists in options, set it; otherwise keep default
-    let found = false;
-    for (let i = 0; i < sel.options.length; i++) {
-      if (sel.options[i].text === pasaranAktif) {
-        sel.selectedIndex = i;
-        found = true;
-        break;
-      }
-    }
-    if (!found) pasaranAktif = sel.value;
-  } else {
-    pasaranAktif = sel.value;
-  }
-  // ensure patterns exist for active pasaran
   ensureAllPasaranExist();
-  // set pattern UI
-  renderPatternButtons();
+  const sel = document.getElementById("pasaranSelect");
+  let found = false;
+  for (let i = 0; i < sel.options.length; i++) {
+    if (sel.options[i].text === pasaranAktif) { sel.selectedIndex = i; found = true; break; }
+  }
+  if (!found) pasaranAktif = sel.value;
   simpanData();
   tampilkanData();
 });
